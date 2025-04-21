@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bot Tín Hiệu BTC{% endblock %}</title>
+    <!-- Link CSS (sẽ tạo sau) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Link thư viện Plotly JS (cần thiết để hiển thị biểu đồ) -->
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1>Bot Tín Hiệu Giao Dịch BTC (Price Action & ML)</h1>
+        <!-- Có thể thêm menu điều hướng ở đây nếu cần -->
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Nội dung chính của trang sẽ được chèn vào đây -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ now.year }} - Bot được tạo bởi Cline. Dữ liệu từ Yahoo Finance.</p>
+        <!-- Thêm thông tin khác nếu cần -->
+    </footer>
+
+    <!-- Link JS tùy chỉnh (nếu cần) -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

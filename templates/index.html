@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Trang Chủ - Bot Tín Hiệu BTC{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Biểu đồ và Tín hiệu Giao dịch BTC/USD (Khung 15 phút - Dữ liệu tạm thời là 1D)</h2>
+
+    <!-- Khu vực hiển thị biểu đồ -->
+    <div id="chart" class="chart-container">
+        <!-- Biểu đồ Plotly sẽ được vẽ vào đây bằng JavaScript -->
+        {% if chart_json %}
+            <p>Đang tải biểu đồ...</p>
+        {% else %}
+            <p>Không thể tải dữ liệu biểu đồ.</p>
+        {% endif %}
+    </div>
+
+    <!-- Khu vực hiển thị tín hiệu -->
+    <div class="signals-container">
+        <h3>Tín hiệu Giao dịch Gần Nhất</h3>
+        {% if signals %}
+            <ul id="signal-list">
+                {% for signal in signals %}
+                    <li class="signal-item signal-{{ signal.type | lower }}">
+                        <strong>{{ signal.type }}</strong> @ {{ "%.2f"|format(signal.price) }}
+                        ({{ signal.time }}) - Strategy: {{ signal.strategy }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Chưa có tín hiệu nào.</p>
+        {% endif %}
+    </div>
+
+    <!-- Khu vực đăng ký email -->
+    <div class="subscription-container">
+        <h3>Nhận Tín Hiệu Qua Email</h3>
+        <form id="subscribe-form">
+            <input type="email" id="email" name="email" placeholder="Nhập email của bạn" required>
+            <button type="submit">Đăng ký</button>
+        </form>
+        <p id="subscribe-message" class="message"></p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Thêm thư viện Socket.IO client -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<!-- Hoặc nếu bạn muốn dùng endpoint do Flask-SocketIO cung cấp:
+<script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+Nhưng CDN thường dễ hơn khi bắt đầu. -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const chartDiv = document.getElementById('chart');
+        const signalList = document.getElementById('signal-list');
+        const chartLoadingMsg = chartDiv ? chartDiv.querySelector('p') : null; // Lấy thẻ p ban đầu
+
+        // --- Khởi tạo SocketIO ---
+        // Kết nối tới server SocketIO (mặc định cùng host/port)
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Đã kết nối tới server Socket.IO');
+            if (chartLoadingMsg) {
+                chartLoadingMsg.textContent = 'Đang chờ dữ liệu cập nhật...';
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Đã ngắt kết nối khỏi server Socket.IO');
+             if (chartLoadingMsg) {
+                chartLoadingMsg.textContent = 'Mất kết nối. Đang thử kết nối lại...';
+                chartLoadingMsg.style.display = 'block'; // Hiển thị lại nếu đang ẩn
+            }
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Lỗi kết nối Socket.IO:', err);
+             if (chartLoadingMsg) {
+                chartLoadingMsg.textContent = 'Không thể kết nối tới server cập nhật.';
+                chartLoadingMsg.style.display = 'block';
+            }
+        });
+
+        // --- Lắng nghe cập nhật dữ liệu ---
+        socket.on('update_data', (data) => {
+            console.log('Nhận được dữ liệu cập nhật:', data);
+
+            // 1. Cập nhật biểu đồ
+            if (data.chart && chartDiv) {
+                try {
+                    const chartData = JSON.parse(data.chart); // Parse JSON string nhận được
+                    // Sử dụng Plotly.react để cập nhật hiệu quả hơn newPlot
+                    Plotly.react(chartDiv, chartData.data, chartData.layout, {responsive: true});
+                    if (chartLoadingMsg) {
+                        chartLoadingMsg.style.display = 'none'; // Ẩn thông báo tải
+                    }
+                     console.log('Biểu đồ đã được cập nhật.');
+                } catch (e) {
+                    console.error('Lỗi khi parse hoặc vẽ biểu đồ:', e);
+                    if (chartLoadingMsg) {
+                        chartLoadingMsg.textContent = 'Lỗi hiển thị biểu đồ.';
+                        chartLoadingMsg.style.display = 'block';
+                    }
+                }
+            } else if (chartDiv && chartLoadingMsg) {
+                 chartLoadingMsg.textContent = 'Không nhận được dữ liệu biểu đồ hợp lệ.';
+                 chartLoadingMsg.style.display = 'block';
+            }
+
+            // 2. Cập nhật danh sách tín hiệu
+            if (data.signals && signalList) {
+                // Xóa các tín hiệu cũ
+                signalList.innerHTML = '';
+                // Thêm tín hiệu mới
+                if (data.signals.length > 0) {
+                    data.signals.forEach(signal => {
+                        const li = document.createElement('li');
+                        li.className = `signal-item signal-${signal.type.toLowerCase()}`;
+                        // Format giá tiền thành 2 chữ số thập phân
+                        const formattedPrice = parseFloat(signal.price).toFixed(2);
+                        li.innerHTML = `<strong>${signal.type}</strong> @ ${formattedPrice} (${signal.time}) - Strategy: ${signal.strategy}`;
+                        signalList.appendChild(li);
+                    });
+                     console.log('Danh sách tín hiệu đã được cập nhật.');
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'Chưa có tín hiệu nào.';
+                    signalList.appendChild(li);
+                     console.log('Không có tín hiệu mới.');
+                }
+            } else if (signalList) {
+                 signalList.innerHTML = '<li>Không nhận được dữ liệu tín hiệu.</li>';
+            }
+        });
+
+        // --- Xử lý form đăng ký email (giữ nguyên) ---
+        const subscribeForm = document.getElementById('subscribe-form');
+        const subscribeMessage = document.getElementById('subscribe-message');
+
+        if (subscribeForm) {
+            subscribeForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Ngăn chặn gửi form theo cách truyền thống
+                subscribeMessage.textContent = 'Đang xử lý...';
+                subscribeMessage.className = 'message info'; // Thêm class để style
+
+                const email = document.getElementById('email').value;
+
+                fetch('/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded', // Gửi dữ liệu form
+                    },
+                    body: 'email=' + encodeURIComponent(email)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    subscribeMessage.textContent = data.message;
+                    if (data.status === 'success') {
+                        subscribeMessage.className = 'message success';
+                        subscribeForm.reset(); // Xóa email trong form
+                    } else {
+                        subscribeMessage.className = 'message error';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi đăng ký:', error);
+                    subscribeMessage.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại.';
+                    subscribeMessage.className = 'message error';
+                });
+            });
+        }
+    }); // Kết thúc DOMContentLoaded
+
+</script>
+{% endblock %}

@@ -1,0 +1,204 @@
+/* --- General Styles --- */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure footer stays at bottom */
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px; /* Limit maximum width */
+    margin: 20px auto; /* Center content */
+    padding: 15px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    flex-grow: 1; /* Allow main content to grow */
+}
+
+h1, h2, h3 {
+    color: #0056b3; /* Blue heading color */
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Header --- */
+header {
+    background-color: #004085; /* Darker blue */
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.8em;
+}
+
+/* --- Main Content Sections --- */
+.chart-container,
+.signals-container,
+.subscription-container {
+    margin-bottom: 30px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.chart-container {
+    min-height: 400px; /* Ensure space for chart */
+    /* display: flex; */ /* Removed flex properties */
+    /* justify-content: center; */
+    /* align-items: center; */
+    position: relative; /* Needed for potential absolute positioning inside */
+    overflow: hidden; /* Prevent chart overflow */
+    /* The Plotly chart should expand to the container width by default. */
+    /* Since the parent .container is centered, this should center the chart. */
+    text-align: center; /* Center the placeholder text if needed */
+}
+
+/* --- Signal List --- */
+.signals-container h3 {
+    margin-top: 0;
+}
+
+#signal-list {
+    list-style: none;
+    padding: 0;
+    max-height: 300px; /* Limit height and add scroll */
+    overflow-y: auto;
+}
+
+.signal-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95em;
+}
+
+.signal-item:last-child {
+    border-bottom: none;
+}
+
+.signal-buy {
+    color: #28a745; /* Green for buy */
+    border-left: 5px solid #28a745;
+    background-color: #e9f7ec;
+}
+.signal-buy strong {
+    color: #1e7e34;
+}
+
+.signal-sell {
+    color: #dc3545; /* Red for sell */
+    border-left: 5px solid #dc3545;
+    background-color: #fceded; /* Light red background */
+}
+.signal-sell strong {
+    color: #b21f2d;
+}
+
+/* --- Subscription Form --- */
+.subscription-container h3 {
+     margin-top: 0;
+}
+
+#subscribe-form {
+    display: flex;
+    gap: 10px; /* Space between input and button */
+    margin-bottom: 10px;
+}
+
+#subscribe-form input[type="email"] {
+    flex-grow: 1; /* Input takes available space */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#subscribe-form button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#subscribe-form button:hover {
+    background-color: #0056b3;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    margin-top: 10px;
+    display: none; /* Hidden by default */
+}
+#subscribe-message.info { display: block; background-color: #e2f3ff; color: #004085; border: 1px solid #b8daff; }
+#subscribe-message.success { display: block; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+#subscribe-message.error { display: block; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+
+/* --- Footer --- */
+footer {
+    background-color: #343a40; /* Dark grey */
+    color: #ccc;
+    text-align: center;
+    padding: 15px 0;
+    margin-top: auto; /* Push footer to bottom */
+    font-size: 0.9em;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    .container {
+        width: 95%;
+    }
+
+    #subscribe-form {
+        flex-direction: column; /* Stack input and button vertically */
+    }
+
+     #subscribe-form button {
+        width: 100%; /* Button takes full width */
+    }
+}
+
+@media (max-width: 480px) {
+     header h1 {
+        font-size: 1.3em;
+    }
+    .container {
+        padding: 10px;
+    }
+    h2 {
+        font-size: 1.2em;
+    }
+    h3 {
+        font-size: 1.1em;
+    }
+}

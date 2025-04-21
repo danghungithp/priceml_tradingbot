@@ -1,0 +1,12 @@
+flask
+pandas
+numpy
+yfinance
+scikit-learn
+plotly
+requests
+gunicorn # WSGI server cho production
+APScheduler
+Flask-SocketIO
+eventlet # Hoặc gevent, cần cho Flask-SocketIO để xử lý đồng thời
+# Thêm các thư viện khác nếu cần trong quá trình phát triển
